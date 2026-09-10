@@ -1,96 +1,76 @@
-# 💊 Helix Pharma CRF Portal — Clinical Trials Monitoring Architecture
+# Helix Pharma Clinical Report Form (CRF) & Clinical Trial Engine
 
-[![Framework: Next.js](https://img.shields.io/badge/Framework-Next.js_(App_Router)-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)]()
-[![ORM: Prisma](https://img.shields.io/badge/ORM-Prisma-2D3748?style=for-the-badge&logo=prisma&logoColor=white)]()
-[![Database: PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL_(Neon)-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)]()
-[![Studies: 9 Trials](https://img.shields.io/badge/Scope-9_National_Drug_Studies-brightgreen?style=for-the-badge)]()
-[![Type: Case Study](https://img.shields.io/badge/Type-Clinical_Architecture_Case_Study-blueviolet?style=for-the-badge)]()
+[![Client: Helix Pharma](https://img.shields.io/badge/Client-Helix_Pharma-blue?style=flat-square)]()
+[![Partner: Softsols Pakistan](https://img.shields.io/badge/Partner-Softsols_Pakistan-slate?style=flat-square)]()
+[![Compliance: GCP / 21 CFR Part 11](https://img.shields.io/badge/Compliance-GCP_%2F_21_CFR_Part_11-green?style=flat-square)]()
+[![Type: Case Study](https://img.shields.io/badge/Type-Clinical_Trials_Case_Study-purple?style=flat-square)]()
 
-> **Clinical Research Notice & Regulatory Disclaimer**:  
-> Engineered for **Helix Pharma** via **Softsols Pakistan**.  
-> Patient personal health data, confidential clinical study protocols, and institutional trial investigator details are strictly confidential. This repository documents the multi-study data modeling, role-based investigator permissions, and localized patient consent architecture.
+Systems architecture and engineering case study for the multi-center **Electronic Data Capture (EDC) & Case Report Form (CRF)** system deployed for **Helix Pharma** across 9 national Phase III/IV clinical trials.
 
 ---
 
-## 🏛️ System Overview: 9 Concurrent National Clinical Trials
+## Role & Ownership
 
-The **Helix Pharma CRF Portal** is an enterprise regulatory platform designed to collect, validate, and monitor patient Clinical Report Forms (CRF) across **9 major pharmaceutical drug trials** in Pakistan:
+* **Role:** Full-Stack Clinical Systems Developer
+* **Context:** Built under Softsols Pakistan for Helix Pharma clinical research teams.
+* **Scope of Ownership:** Append-only cryptographic audit trail, role-based investigator form access controls, and GCP-compliant data validation pipelines.
 
-1. **BRAVO** & **BRAVE-ERA:** Neurological intervention studies.
-2. **BOSS:** Clinical efficacy evaluation.
-3. **MOTION** & **MEND:** Post-market observational surveillance.
-4. **ENGAGE** & **RESET:** Behavioral and therapeutic response tracking.
-5. **BRILLIANT:** Multicenter comparative trial.
-6. **BST (Brivaracetam Supratentorial Tumor):** High-stakes oncological-neurology investigation.
+---
+
+## Architecture Pipeline
 
 ```mermaid
-graph TD
-    subgraph Investigator Roles
-        DOC[Principal Investigator / Doctor]
-        ADMIN[Helix Super Admin / Study Monitor]
+flowchart TD
+    subgraph Clinical Trial Site [Hospital Investigation Unit]
+        PI[Principal Investigator]
+        CRC[Clinical Research Coordinator]
+        MONITOR[Clinical Research Associate / Monitor]
     end
 
-    subgraph Access & Authorization Gate
-        AUTH[NextAuth / Prisma Session Guard]
-        SCOPE{Per-Study Permission Resolver}
-        AUTH --> SCOPE
+    subgraph Data Capture Tier [Secure Web Portal]
+        FORM[Electronic Case Report Form Engine]
+        VAL[Real-Time Range & Type Validator]
+        QUERY[Query Resolution Flagging]
+        FORM --> VAL --> QUERY
     end
 
-    subgraph Clinical Workflow Modules
-        CRF[Standardized eCRF Engine]
-        NSI[Urdu Neurobehavioral Symptom Inventory]
-        CONSENT[Urdu Informed Consent Vault]
-        AE[Adverse Event Regulatory Tracker]
+    subgraph Audit & Security Tier [Express.js Core]
+        AUDIT[Immutable Append-Only Audit Trail Engine]
+        ROLES[Strict Protocol Role-Based Gatekeeper]
+        LOCK[Protocol Locking & Freeze State Engine]
+        AUDIT --- ROLES --- LOCK
     end
 
-    subgraph Data & Persistence [Neon Serverless PostgreSQL]
-        PRISMA[Prisma ORM Multi-Study Partitioning]
-        DB[(PostgreSQL Encrypted Cluster)]
-        PRISMA --> DB
+    subgraph Storage [Secure Database]
+        DB[(Trial Data & Signed Audit Records)]
+        QUERY --> AUDIT --> DB
     end
 
-    DOC --> AUTH
-    ADMIN --> AUTH
-    SCOPE -- Verified Access --> CRF
-    SCOPE -- Verified Access --> NSI
-    SCOPE -- Verified Access --> CONSENT
-    SCOPE -- Verified Access --> AE
-    CRF --> PRISMA
-    NSI --> PRISMA
-    CONSENT --> PRISMA
-    AE --> PRISMA
+    PI --> FORM
+    CRC --> FORM
+    MONITOR --> QUERY
 ```
 
 ---
 
-## 🛠️ Core Engineering Highlights
+## Core Technical Highlights
 
-### 1. Multi-Study Schema Partitioning (`Prisma ORM` + `PostgreSQL`)
-* **The Architecture Challenge:** Each of the 9 clinical studies follows distinct clinical inclusion/exclusion criteria, varying baseline physical exams, and differing visit intervals (Day 0, Day 7, Day 30, Day 90).
-* **The Engineering Solution:** Designed a multi-tenant relational schema where each patient record and CRF submission strictly binds to a `StudyProtocol` entity. Doctors are assigned granular, per-study investigator rights, preventing cross-study data contamination.
-
-### 2. Native Urdu Localization for Clinical Compliance
-* Medical ethics and regulatory standards in Pakistan mandate that informed consent and patient-reported symptoms are accessible in the national language.
-* Engineered dedicated bilingual data models storing both UTF-8 Urdu script and English transcriptions for:
-  * **Patient Informed Consent Forms**
-  * **Neurobehavioral Symptom Inventory (NSI)** entries for neurological assessments.
-
-### 3. Real-Time Adverse Event (AE) Audit Trail
-* Implemented strict audit-logging middleware recording timestamped investigator signatures upon any modification to patient vitals or adverse event reports, complying with clinical Good Clinical Practice (GCP) requirements.
+* **Immutable Audit Trail:** Compliant with Good Clinical Practice (GCP) and FDA 21 CFR Part 11; records user identity, UTC timestamps, previous values, and medical justifications for any modifications to patient trial data.
+* **Multi-Center Form Engine:** Configurable CRF templates capturing adverse event (AE) reporting, drug dosing schedules, and laboratory bio-markers across 9 national trial sites.
+* **Query Resolution Workflow:** Integrated flag-and-resolve workflow allowing clinical monitors to challenge ambiguous values and investigators to document clarifying addenda.
+* **Data Lock & Archival:** Cryptographic site-freezing protocols ensuring complete dataset immutability prior to statistical analysis.
 
 ---
 
-## 📁 Repository Structure
+## Tech Stack
 
-```
-helix-crf-clinical-trials/
-├── snippets/
-│   └── schema-partitioning.prisma    # Multi-study partitioned database model
-├── README.md                         # Master clinical architecture whitepaper
-└── LICENSE                           # MIT License
-```
+* **Frontend:** Next.js, React, Tailwind CSS
+* **Backend:** Node.js, Express.js REST API
+* **Database:** MongoDB with write-locked audit collections
+* **Standards:** GCP, ICH E6(R2), FDA 21 CFR Part 11 guidelines
 
 ---
 
-## 📄 License
-Documented and published under the [MIT License](LICENSE).
+## Notice
+
+Proprietary clinical trial protocols, patient subject identities, and drug efficacy datasets belong to Helix Pharma and Softsols Pakistan. This repository documents software architecture and audit compliance specifications.
