@@ -1,0 +1,70 @@
+// Sanitized architectural excerpt of multi-study partitioned schema
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum StudyType {
+  BRAVO
+  BRAVE_ERA
+  BOSS
+  MOTION
+  MEND
+  ENGAGE
+  RESET
+  BRILLIANT
+  BST
+}
+
+enum Role {
+  DOCTOR
+  SUPER_ADMIN
+}
+
+model User {
+  id           String             @id @default(cuid())
+  email        String             @unique
+  fullName     String
+  role         Role               @default(DOCTOR)
+  assignedStudies StudyAssignment[]
+  createdCRFs  CRFSubmission[]
+  createdAt    DateTime           @default(now())
+}
+
+model StudyAssignment {
+  id        String    @id @default(cuid())
+  userId    String
+  study     StudyType
+  user      User      @relation(fields: [userId], references: [id])
+
+  @@unique([userId, study])
+}
+
+model Patient {
+  id              String          @id @default(cuid())
+  study           StudyType
+  patientCode     String          // De-identified trial patient code (e.g. BST-004)
+  consentGivenUrdu Boolean        @default(false)
+  crfSubmissions  CRFSubmission[]
+  createdAt       DateTime        @default(now())
+
+  @@unique([study, patientCode])
+}
+
+model CRFSubmission {
+  id            String    @id @default(cuid())
+  study         StudyType
+  patientId     String
+  doctorId      String
+  visitStage    String    // BASELINE, FOLLOWUP_1, FINAL
+  adverseEvents Json?     // Structured clinical adverse event payload
+  isLocked      Boolean   @default(false)
+  patient       Patient   @relation(fields: [patientId], references: [id])
+  doctor        User      @relation(fields: [doctorId], references: [id])
+  createdAt     DateTime  @default(now())
+}
