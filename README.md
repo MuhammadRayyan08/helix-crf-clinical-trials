@@ -1,76 +1,76 @@
-# Helix Pharma Clinical Report Form (CRF) & Clinical Trial Engine
+# Helix Pharma Clinical Report Form (CRF) Portal
 
 [![Client: Helix Pharma](https://img.shields.io/badge/Client-Helix_Pharma-blue?style=flat-square)]()
 [![Partner: Softsols Pakistan](https://img.shields.io/badge/Partner-Softsols_Pakistan-slate?style=flat-square)]()
-[![Compliance: GCP / 21 CFR Part 11](https://img.shields.io/badge/Compliance-GCP_%2F_21_CFR_Part_11-green?style=flat-square)]()
-[![Type: Case Study](https://img.shields.io/badge/Type-Clinical_Trials_Case_Study-purple?style=flat-square)]()
+[![Stack: Next.js / Prisma](https://img.shields.io/badge/Stack-Next.js_%2F_Prisma-black?style=flat-square)]()
+[![Database: PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-336791?style=flat-square)]()
+[![Type: Case Study](https://img.shields.io/badge/Type-Clinical_Portal_Case_Study-purple?style=flat-square)]()
 
-Systems architecture and engineering case study for the multi-center **Electronic Data Capture (EDC) & Case Report Form (CRF)** system deployed for **Helix Pharma** across 9 national Phase III/IV clinical trials.
-
----
-
-## Role & Ownership
-
-* **Role:** Full-Stack Clinical Systems Developer
-* **Context:** Built under Softsols Pakistan for Helix Pharma clinical research teams.
-* **Scope of Ownership:** Append-only cryptographic audit trail, role-based investigator form access controls, and GCP-compliant data validation pipelines.
+Systems architecture and implementation case study for the centralized **Clinical Report Form (CRF)** data capture portal built for **Helix Pharma** across 9 clinical drug trials in Pakistan.
 
 ---
 
-## Architecture Pipeline
+## Role & Scope
+
+* **Role:** Full-Stack Developer (Team Project)
+* **Context:** Built under Softsols Pakistan for Helix Pharma clinical study coordinators.
+* **Scope of Ownership:** Contributed to the Next.js and Prisma web portal: structured multi-study database schemas, built role-gated clinical input forms (baseline exams, follow-ups, adverse event logs), and implemented patient consent modules.
+
+---
+
+## System Flow
 
 ```mermaid
 flowchart TD
-    subgraph Clinical Trial Site [Hospital Investigation Unit]
-        PI[Principal Investigator]
-        CRC[Clinical Research Coordinator]
-        MONITOR[Clinical Research Associate / Monitor]
+    subgraph Clinical Users [Hospital Trial Sites]
+        PI[Principal Investigator / Doctor]
+        CRC[Study Coordinator]
+        ADMIN[Trial Administrator]
     end
 
-    subgraph Data Capture Tier [Secure Web Portal]
-        FORM[Electronic Case Report Form Engine]
-        VAL[Real-Time Range & Type Validator]
-        QUERY[Query Resolution Flagging]
-        FORM --> VAL --> QUERY
+    subgraph Portal Interface [Next.js App Router]
+        AUTH[Role-Gated Authentication]
+        STUDY[Study Selector - 9 Trial Protocols]
+        FORMS[Patient CRF Input Forms]
+        AE[Adverse Event Logging]
+        AUTH --> STUDY --> FORMS --> AE
     end
 
-    subgraph Audit & Security Tier [Express.js Core]
-        AUDIT[Immutable Append-Only Audit Trail Engine]
-        ROLES[Strict Protocol Role-Based Gatekeeper]
-        LOCK[Protocol Locking & Freeze State Engine]
-        AUDIT --- ROLES --- LOCK
+    subgraph Data & Schema Tier [Prisma & PostgreSQL]
+        PRISMA[Prisma ORM Client]
+        DB[(PostgreSQL Database)]
+        AUDIT[Change Log Tracking]
+        FORMS --> PRISMA
+        AE --> PRISMA
+        PRISMA --> DB
+        PRISMA --> AUDIT
     end
 
-    subgraph Storage [Secure Database]
-        DB[(Trial Data & Signed Audit Records)]
-        QUERY --> AUDIT --> DB
-    end
-
-    PI --> FORM
-    CRC --> FORM
-    MONITOR --> QUERY
+    PI --> AUTH
+    CRC --> AUTH
+    ADMIN --> AUTH
 ```
 
 ---
 
-## Core Technical Highlights
+## Technical Highlights
 
-* **Immutable Audit Trail:** Compliant with Good Clinical Practice (GCP) and FDA 21 CFR Part 11; records user identity, UTC timestamps, previous values, and medical justifications for any modifications to patient trial data.
-* **Multi-Center Form Engine:** Configurable CRF templates capturing adverse event (AE) reporting, drug dosing schedules, and laboratory bio-markers across 9 national trial sites.
-* **Query Resolution Workflow:** Integrated flag-and-resolve workflow allowing clinical monitors to challenge ambiguous values and investigators to document clarifying addenda.
-* **Data Lock & Archival:** Cryptographic site-freezing protocols ensuring complete dataset immutability prior to statistical analysis.
+* **Multi-Study Protocol Schemas:** Structured relational data models with Prisma to isolate patient visits, lab values, and symptom scores across 9 distinct clinical trials.
+* **Clinical Input Validation:** Built form validation rules to ensure required medical observations, vital signs, and medication dosages are accurately entered before submission.
+* **Adverse Event Logging:** Implemented structured tracking for reporting unexpected clinical events, severity gradings, and follow-up resolutions.
+* **Role-Based Access Control:** Structured role boundaries separating hospital site coordinators, attending physicians, and administrative auditors.
 
 ---
 
 ## Tech Stack
 
-* **Frontend:** Next.js, React, Tailwind CSS
-* **Backend:** Node.js, Express.js REST API
-* **Database:** MongoDB with write-locked audit collections
-* **Standards:** GCP, ICH E6(R2), FDA 21 CFR Part 11 guidelines
+* **Frontend & Backend:** Next.js (App Router, Server Actions), React
+* **Language:** TypeScript
+* **ORM & Database:** Prisma ORM, PostgreSQL
+* **Styling:** Tailwind CSS
 
 ---
 
 ## Notice
 
-Proprietary clinical trial protocols, patient subject identities, and drug efficacy datasets belong to Helix Pharma and Softsols Pakistan. This repository documents software architecture and audit compliance specifications.
+Clinical trial protocols, patient personal health information, and proprietary drug datasets belong strictly to Helix Pharma and Softsols Pakistan. This repository documents system architecture and software specifications.
